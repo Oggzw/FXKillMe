@@ -30,17 +30,7 @@ class ComboBoxExample < FXMainWindow
 
 
         FXMenuTitle.new(menubar, "Options", nil, filemenu)
-        helpmenu = FXMenuPane.new(matrix)
-        
-
-
-        
-
-
-
-
-
-        
+        helpmenu = FXMenuPane.new(matrix)        
         listview_frame = FXHorizontalFrame.new(v_frame, :opts => FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL|LAYOUT_TOP, :padding => 0)
 
 

@@ -1,32 +1,36 @@
-#---
-# Excerpted from "FXRuby: Create Lean and Mean GUIs with Ruby",
-# published by The Pragmatic Bookshelf.
-# Copyrights apply to this code. It may not be used to create training material, 
-# courses, books, articles, and the like. Contact us if you are in doubt.
-# We make no guarantees that this code is fit for any purpose. 
-# Visit http://www.pragmaticprogrammer.com/titles/fxruby for more book information.
-#---
+
 require 'fox16'
 
 include Fox
-require_relative 'bigfolder.png'
 
 class TreeListExample < FXMainWindow
   def initialize(app)
     super(app, "My Tunes", :width => 400, :height => 200)
     treelist_frame = FXHorizontalFrame.new(self, FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL)
 
+    bigfolder = FXPNGIcon.new(app, File.open("minifolder.png", "rb").read)
+    fileIcon = FXPNGIcon.new(app, File.open("minidoc.png", "rb").read)
+
+
+
+
     treelist = FXTreeList.new(treelist_frame,
       :opts => TREELIST_NORMAL|TREELIST_SHOWS_LINES| \
                TREELIST_SHOWS_BOXES|TREELIST_ROOT_BOXES|LAYOUT_FILL)
     artist_1    = treelist.appendItem(nil, "Dir1")
-    treelist.setItemOpenIcon(artist_1, bigfolder.png)
+    treelist.setItemOpenIcon(artist_1, bigfolder)
+    treelist.setItemClosedIcon(artist_1, bigfolder)
     album_1_2   = treelist.appendItem(artist_1, "Dir1/File.txt")
     track_1_2_3 = treelist.appendItem(album_1_2, "Ghost in this House")
+
+
+    treelist.setItemOpenIcon(track_1_2_3, fileIcon)
+    treelist.setItemClosedIcon(track_1_2_3, fileIcon)
     track_1_2_2 = treelist.prependItem(album_1_2, "Maybe")
+
+
     track_1_2_1 = treelist.insertItem(track_1_2_2, album_1_2, "Stay")
-    album_1_1   =
-      treelist.prependItem(artist_1, "Every Time You Say Goodbye")
+    album_1_1   = treelist.prependItem(artist_1, "Every Time You Say Goodbye")
 
     artist_3    = treelist.appendItem(nil, "Chicago")
     album_3_1   = treelist.appendItem(artist_3, "Greatest Hits, Vol. I")
@@ -71,15 +75,11 @@ class TreeListExample < FXMainWindow
             info = FXMenuCommand.new(menu_pane, "Get Info")
             info.connect(SEL_COMMAND) { display_info_for(item) }
 
-            # ...
-
-
             menu_pane.create
             menu_pane.popup(nil, event.root_x, event.root_y)
             app.runModalWhileShown(menu_pane)
 
           end
-
         end
       end
     end
