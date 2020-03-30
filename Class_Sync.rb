@@ -18,7 +18,7 @@ class FileObserver
       getMtime
       validateDir
     end
-    private
+
     def getDir()
       wd = Dir.pwd
       dir = Dir.glob('**/*', base:wd)
@@ -64,6 +64,6 @@ class FileObserver
       end
     end
   end
-  
+
   include ClassMethods
 end

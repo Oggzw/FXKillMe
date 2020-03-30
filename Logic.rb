@@ -1,3 +1,4 @@
+require_relative 'Class_Sync.rb'
 require_relative 'Gui.rb'
 require 'fox16'
 include Fox
