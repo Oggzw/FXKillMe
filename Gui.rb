@@ -18,8 +18,6 @@ class ComboBoxExample < FXMainWindow
             dialog = FXDirDialog.new(self, "Select")
             if dialog.execute != 0
               @mybigdir = dialog.directory 
-              sleep 5
-              puts @mybigdir
             end
           }
           
