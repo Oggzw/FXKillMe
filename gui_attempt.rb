@@ -1,9 +1,11 @@
 require 'fox16'
 include Fox
+
 class TreeListExample < FXMainWindow
   def initialize(app)
   @Hash = {}
   super(app, "Directory", :width => 400, :height => 200)
+  
 	treelist_frame = FXHorizontalFrame.new(self, FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL)
   treelist = FXTreeList.new(treelist_frame,
 	  :opts => TREELIST_NORMAL|TREELIST_SHOWS_LINES| \
