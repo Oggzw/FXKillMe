@@ -6,35 +6,56 @@ class ComboBoxExample < FXMainWindow
     
     def initialize(app)
         super(app, "Sync.wtf", :width => 800, :height => 600)
+        frame = FXVerticalFrame.new(self, FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL)
+        
         threadCreation = 0 
         @Hash = {}
-        frame = FXVerticalFrame.new(self, FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL)
         @mybigdir
         @logic = FileObserver.new
+        
+        bigfolder = FXPNGIcon.new(app, File.open("minifolder.png", "rb").read)
+        fileIcon = FXPNGIcon.new(app, File.open("minidoc.png", "rb").read)
         # ------------------------------------------------------------------------------------ #
         menubar = FXMenuBar.new(frame, LAYOUT_FILL_X)
         filemenu = FXMenuPane.new(frame)
+        FXMenuTitle.new(menubar, "Options", nil, filemenu)
+        
         FXMenuCommand.new(filemenu, "Add directory").connect(SEL_COMMAND) {
             dialog = FXDirDialog.new(self, "Select")
             if dialog.execute != 0
-              @mybigdir = dialog.directory 
+                @mybigdir = dialog.directory 
             end
-          }
-          
-          FXMenuCommand.new(filemenu, "Remove directory").connect(SEL_COMMAND) {puts "DICKCKCKCK"}  # add removal of directories 
-          FXMenuCommand.new(filemenu, "Sync").connect(SEL_COMMAND) {@logic.sync} # PUT SYNC PROGRAM IN HERE PLS
-          
-        FXMenuTitle.new(menubar, "Options", nil, filemenu)
+        }
+        
+        FXMenuCommand.new(filemenu, "Remove directory").connect(SEL_COMMAND) {puts "DICKCKCKCK"}  # add removal of directories 
+        FXMenuCommand.new(filemenu, "Sync").connect(SEL_COMMAND) {@logic.sync} # PUT SYNC PROGRAM IN HERE PLS
+        
         
         treelist = FXTreeList.new(frame,
             :opts => TREELIST_NORMAL|TREELIST_SHOWS_LINES| \
             TREELIST_SHOWS_BOXES|TREELIST_ROOT_BOXES|LAYOUT_FILL)
             
             
-            bigfolder = FXPNGIcon.new(app, File.open("minifolder.png", "rb").read)
-            fileIcon = FXPNGIcon.new(app, File.open("minidoc.png", "rb").read)
             
-            wd = Dir.pwd
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            wd = Dir.pwd  #Dir.chdir("C:/Users/Ogg1w/Documents/Arduino")
+            
+            
+            
+            
             dir = Dir.glob('**/*', base:wd)
             dir_is_dir = []
             dir_is_file = []
@@ -71,11 +92,14 @@ class ComboBoxExample < FXMainWindow
                     treelist.appendItem(nil, dir.rpartition("/")[-1], oi = fileIcon,ci = fileIcon)
                 end
             end
+        end
             
+            
+            
+            
+            
+            def create
+                super
+                show(PLACEMENT_SCREEN)
+            end
         end
-        
-        def create
-            super
-            show(PLACEMENT_SCREEN)
-        end
-    end
