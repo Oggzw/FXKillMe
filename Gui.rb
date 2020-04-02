@@ -93,13 +93,13 @@ class ComboBoxExample < FXMainWindow
                 end
             end
         end
-            
-            
-            
-            
-            
-            def create
-                super
-                show(PLACEMENT_SCREEN)
-            end
+        
+        
+        
+        
+        
+        def create
+            super
+            show(PLACEMENT_SCREEN)
         end
+    end
