@@ -1,4 +1,4 @@
-@dirlist = ["C:/Users/Ogg1w/Documents/Arduino", "C:/Users/Ogg1w/Documents/My games"]
+@dirlist = ["C:/Users/wiggo.stromberg/Documents/Arduino", "C:/Users/wiggo.stromberg/Documents/My games"]
 require 'fox16'
 #require_relative 'Class_Sync.rb'
 include Fox
