@@ -1,14 +1,15 @@
-@dirlist = ["C:/Users/Ogg1w/Documents/Arduino", "C:/Users/Ogg1w/Documents/My games"]
+
 require 'fox16'
 #require_relative 'Class_Sync.rb'
 include Fox
 
 class ComboBoxExample < FXMainWindow
-    
+   
     def initialize(app)
         super(app, "Sync.wtf", :width => 800, :height => 600)
         @frame = FXVerticalFrame.new(self, FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL)
-        @dirlist = ["C:/Users/Ogg1w/Documents/Arduino", "C:/Users/Ogg1w/Documents/My games"]
+        #@dirlist = ["C:/Users/Ogg1w/Documents/Arduino", "C:/Users/Ogg1w/Documents/My games"]
+        @dirlist = []
         @dir_Variable = 0
         @Hash = {}
         @mybigdir
@@ -26,6 +27,7 @@ class ComboBoxExample < FXMainWindow
             if dialog.execute != 0
                 @mybigdir = dialog.directory 
             end 
+            directories()
         }
         
         FXMenuCommand.new(filemenu, "Remove directory").connect(SEL_COMMAND) {
@@ -35,7 +37,7 @@ class ComboBoxExample < FXMainWindow
         
         @treelist = FXTreeList.new(@frame,:opts => TREELIST_NORMAL|TREELIST_SHOWS_LINES|TREELIST_SHOWS_BOXES|TREELIST_ROOT_BOXES|LAYOUT_FILL)
         
-        directories
+    
     end
     
     def directories
@@ -44,10 +46,9 @@ class ComboBoxExample < FXMainWindow
             @treelist.setItemOpenIcon(@Hash.key(directory), @bigfolder)
             @treelist.setItemClosedIcon(@Hash.key(directory), @bigfolder)
             puts @dir_Variable
-           
+            
             Dir.chdir("#{directory}")
             wd = Dir.pwd  #Dir.chdir("C:/Users/Ogg1w/Documents/Arduino")
-            
             
             temp_dir = Dir.glob('**/*', base:wd)
             dir_is_dir = []
@@ -60,7 +61,7 @@ class ComboBoxExample < FXMainWindow
                 end
                 if File.file?(dir) == true
                     dir_is_file << dir
-                  
+                    
                 end
             end
             dir_is_dir.each do | dir |
@@ -85,31 +86,34 @@ class ComboBoxExample < FXMainWindow
                 elsif
                     @treelist.appendItem(nil, dir.rpartition("/")[-1], oi = @fileIcon,ci = @fileIcon)
                 end
-            end
-            
-        end
-            
-    end
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        def create
-            super
-            show(PLACEMENT_SCREEN)
-        end 
-    end
-    if __FILE__ == $0
-        FXApp.new do |app|
-            ComboBoxExample.new(app)
-            app.create
-            
-            app.run
+            end 
         end
     end
+    
+    
+    
+    
+    
+    def create
+        super
+        if @dirlist.empty? == true
+            
+            dialog = FXDirDialog.new(self, "Select directory")
+            if dialog.execute != 0
+                @dirlist << dialog.directory
+            end 
+        end
+        directories()
+        show(PLACEMENT_SCREEN)
+    
+    end
+end
+
+if __FILE__ == $0
+    FXApp.new do |app|
+        ComboBoxExample.new(app)
+        app.create
+
+        app.run
+    end
+end
