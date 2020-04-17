@@ -1,0 +1,23 @@
+= FXRuby
+
+
+== DESCRIPTION:
+
+Mitt jättefina sync program. >))))
+
+
+== FEATURES:
+
+* Threads
+* Multiple directories
+* GUUUUUIIII
+* And fuck you
+
+== INSTALL:
+
+Jadda jadda någon version av ruby 
+
+Then, install the gem:
+* gem install fxruby
+* gem install clipboard
+* gem install ffi

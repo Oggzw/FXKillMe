@@ -1,8 +1,9 @@
 
 require 'fox16'
+require 'clipboard'
 #require_relative 'Class_Sync.rb'
 include Fox
-
+#temp dirlist
 $dirlist = ["C:/Users/Ogg1w/Documents/Arduino", "C:/Users/Ogg1w/Documents/My games"]
 
 class FXAddDialog < FXDialogBox 
@@ -119,7 +120,7 @@ class ComboBoxExample < FXMainWindow
             temp_dir = Dir.glob('**', base:wd)
          else
             temp_dir = Dir.glob('**/*', base:wd)
-         end
+         end   
          
          dir_is_dir = []
          dir_is_file = []
@@ -153,7 +154,24 @@ class ComboBoxExample < FXMainWindow
             elsif
                @treelist.appendItem(@Hash.key(directory), dir.rpartition("/")[-1], oi = @fileIcon,ci = @fileIcon)
             end
-         end 
+         end
+
+         @treelist.connect(SEL_RIGHTBUTTONRELEASE) do |sender, sel, event|
+            unless event.moved?
+               item = sender.getItemAt(event.win_x, event.win_y)
+               puts item
+               unless item.nil?
+                  FXMenuPane.new(self) do |menu_pane|
+                     path = FXMenuCommand.new(menu_pane, "Copy path")
+                     puts item
+                     path.connect(SEL_COMMAND) { Clipboard.copy("#{item}") }
+                     menu_pane.create
+                     menu_pane.popup(nil, event.root_x, event.root_y)
+                     app.runModalWhileShown(menu_pane)
+                  end
+               end
+            end
+         end
       end
    end
    
