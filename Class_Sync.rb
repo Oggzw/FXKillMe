@@ -1,16 +1,26 @@
 class FileObserver
+  require 'yaml'
+  require_relative 'Gui'
+  
+  
   def initialize()
-    @file_inventory = {}
-    @removedFiles = []
-    @updatedFiles = []
-    @DirList = []
-    @threadList = []
+    @updatedMtime = {}
+    @temp_dirlist = {}
+    @removedDirectory = []
+    
     sync
   end
   
-  attr_reader :file_inventory
-  attr_reader :updatedFiles
-  attr_reader :removedFiles
+  
+  #  { font_size: 10, font_family: "Arial" }
+  # directories = { "C:/Users/wiggo.stromberg/Desktop": [0, mtime] }
+  # The key is the directory while the value is an array with first a number of 0 or 1 which decides if subfolders should be counted in Gui.rb 
+  # and the mtime is just the mtime of the directory. 
+  #
+  #startDir = Dir.home + "/Desktop"
+  
+  
+  
   
   module ClassMethods
     
@@ -18,52 +28,59 @@ class FileObserver
       getMtime
       validateDir
     end
-
+    
     def getDir()
-      wd = Dir.pwd
-      dir = Dir.glob('**/*', base:wd)
-      return dir 
+      return $dirlist.keys
     end
     
     def getMtime()
       dir = getDir
       dir.each do |dir|
-        temp = File.mtime(dir)
-        @file_inventory[dir] = temp
+        mtime = File.mtime(dir)
+        #print $dirlist[dir]
+        @updatedMtime[dir] = mtime # { "C:/Users/wiggo.stromberg/Desktop": [0, mtime] }
       end
     end
     
     def validateDir()
-      t = Thread.new do 
+      thread = Thread.new do 
         while true
+          validatedDirectory = []
+          updatedFiles = []
+          removedDirectory = []
           sleep 5
-          validatedFiles = []
-          wd = Dir.pwd 
-          temp_dir = getDir
-          @file_inventory.each do |dir, value|
-            temp = temp_dir.include?(dir)
-            if temp == false
-              @removedFiles << dir
-            elsif temp == true
-              if @removedFiles.include?(dir) then @removedFiles.delete(dir) 
-              else 
-                validatedFiles << dir
-              end
-            end
-          end
-          validatedFiles.each do |dir| 
-            mtime = File.mtime(dir)
-            temp = @file_inventory.has_value?(mtime)
-            if temp == false
-              @updatedFiles << dir
-            elsif temp == true
-            end
-          end
           
+          $dirlist.keys.each do |directory|
+            validation = @temp_dirlist.include?(directory)
+            if Dir.exist?(directory) == false 
+              removedDirectory << directory
+            elsif 
+              validatedDirectory << directory
+            end
+          end
+          validatedDirectory.each do |directory| 
+            
+            if  $dirlist.values_at(directory)[1] == @updatedMtime.values_at(directory)
+              updatedFiles << directory 
+            end
+            system "cls"
+            puts @updatedMtime.values_at(directory)
+         
+
+            puts "-----------------------------------------------"
+            puts "These folders have been removed/moved since last sync."
+            puts removedDirectory
+            puts "-----------------------------------------------"
+            puts "These folders have been changed since last sync."
+            puts updatedFiles
+            puts "-----------------------------------------------"
+        
+         
+            
+          end 
         end
       end
     end
   end
-
   include ClassMethods
 end

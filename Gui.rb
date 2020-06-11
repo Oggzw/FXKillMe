@@ -1,11 +1,7 @@
-
 require 'fox16'
-require 'clipboard'
-#require_relative 'Class_Sync.rb'
+require 'clipboard' 
+require 'yaml' 
 include Fox
-#temp dirlist
-$dirlist = ["C:/Users/Ogg1w/Documents/Arduino", "C:/Users/Ogg1w/Documents/My games"]
-
 class FXAddDialog < FXDialogBox 
    def initialize(owner)
       super(owner, "Test of Dialog Box", :width => 600, :height => 160)
@@ -16,14 +12,13 @@ class FXAddDialog < FXDialogBox
       buttons = FXHorizontalFrame.new(self, LAYOUT_SIDE_BOTTOM|FRAME_NONE|LAYOUT_FILL_X|PACK_UNIFORM_WIDTH, :padLeft => 40, :padRight => 40, :padTop => 20, :padBottom => 20)
       
       FXLabel.new(self, "Add directory:")
-      target_dir_textfield = FXTextField.new(self, 96)            
+      $target_dir = FXTextField.new(self, 96)            
       set_target_dir_btn = FXButton.new(self, "Choose destination", :opts => BUTTON_NORMAL)
       
       set_target_dir_btn.connect(SEL_COMMAND) do
          dialog = FXDirDialog.new(self, "Select")
          if dialog.execute != 0
-            target_dir_textfield.text = dialog.directory.gsub("\\", "/")
-            $dir = dialog.directory.gsub("\\", "/")
+            $target_dir.text = dialog.directory.gsub("\\", "/")
          end
       end
       
@@ -33,11 +28,8 @@ class FXAddDialog < FXDialogBox
       accept = FXButton.new(buttons, "Accept", nil, self, ID_ACCEPT,FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT|LAYOUT_CENTER_Y)
       FXButton.new(buttons, "Cancel", nil, self, ID_CANCEL,FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT|LAYOUT_CENTER_Y)
       
-      accept.setDefault
-      accept.setFocus
    end
 end
-
 
 class FXRemoveDialog < FXDialogBox 
    def initialize(owner)
@@ -54,7 +46,10 @@ class FXRemoveDialog < FXDialogBox
       
       # Directory list
       pane = FXPopup.new(self)
-      $dirlist.each do |s|
+      
+      $dirlist.keys.each do |s|
+         s = "#{s}" 
+         
          option = FXOption.new(pane, s, :opts => JUSTIFY_HZ_APART|ICON_AFTER_TEXT)
          option.connect(SEL_COMMAND) {$dir = s}
       end
@@ -66,25 +61,18 @@ class FXRemoveDialog < FXDialogBox
       
       # Cancel button
       FXButton.new(buttons, "Cancel", nil, self, ID_CANCEL,FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT|LAYOUT_CENTER_Y)
-      
-      accept.setDefault
-      accept.setFocus
    end
 end
-
-
-
-
 
 class ComboBoxExample < FXMainWindow
    attr_writer :int
    def initialize(app)
       super(app, "Sync.wtf", :width => 800, :height => 600)
       @frame = FXVerticalFrame.new(self, FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL)
-      @dir_Variable = 0
+
+      @fxItem_Variable = 0
       @Hash = {}
-      @mybigdir
-      #@logic = FileObserver.new
+
       @bigfolder = FXPNGIcon.new(app, File.open("bigfolder.png", "rb").read)
       @folder = FXPNGIcon.new(app, File.open("minifolder.png", "rb").read)
       @fileIcon = FXPNGIcon.new(app, File.open("minidoc.png", "rb").read)
@@ -94,29 +82,59 @@ class ComboBoxExample < FXMainWindow
       filemenu = FXMenuPane.new(@frame)
       FXMenuTitle.new(menubar, "Options", nil, filemenu)
       
-      FXMenuCommand.new(filemenu, "Add directory").connect(SEL_COMMAND, method(:onCmdShowDialog)) 
+      FXMenuCommand.new(filemenu, "Add directory").connect(SEL_COMMAND, method(:AddDialog)) 
       
-      FXMenuCommand.new(filemenu, "Remove directory").connect(SEL_COMMAND, method(:onCmdShowDialogModal))        
-      
-      #FXMenuCommand.new(filemenu, "Sync").connect(SEL_COMMAND) {@logic.sync} # PUT SYNC PROGRAM IN HERE PLS
+      FXMenuCommand.new(filemenu, "Remove directory").connect(SEL_COMMAND, method(:DeleteDialog))        
+     
+      #FXMenuCommand.new(filemenu, "Sync").connect(SEL_COMMAND) {@logic.sync} # PUT SYNC PROGRAM IN HERE PLS //DRIVE UGH
       
       @treelist = FXTreeList.new(@frame,:opts => TREELIST_NORMAL|TREELIST_SHOWS_LINES|TREELIST_SHOWS_BOXES|TREELIST_ROOT_BOXES|LAYOUT_FILL)
-      
+      Thread.new do
+         while true
+            sleep 30
+            directories
+         end
+      end
       directories
    end
    
+   # Internal: Creates the main treelist gui for the program. 
+   # Goes through each directory and makes variables for folders so files/folders and be put under them with treelist.AppendItem 
+   # Also has support for right click and choice of subfolder or not. 
+   #
+   #
+   # $dirlist - Global array used to store the directories in Class_Sync and Gui
+   # Hash - A Hash holding all the Instance variables made to store information about folders FXItem location. 
+   #
    def directories
+      $dirlist = YAML.load(File.read("Data.yml"))
+      begin
+         file = File.open("Data.yml", "w")
+         file.write($dirlist.to_yaml) 
+         puts "hhaahha"
+      rescue IOError => e
+         puts "some error occured, dir not writable perhaps."
+      ensure
+         file.close unless file.nil?
+      end
+      puts YAML.load(File.read("Data.yml"))
       @treelist.clearItems()
       @Hash = {}
-      $dirlist.each do |directory|
+
+      $dirlist.keys.each do |directory|
+         directory = "#{directory}"
          if @Hash.include?(@Hash.key(directory)) == false
-            @Hash[instance_variable_set("@H" + "#{@dir_Variable}", @treelist.appendItem(nil, directory))] = directory
+            @Hash[instance_variable_set("@H" + "#{@fxItem_Variable}", @treelist.appendItem(nil, directory))] = directory
+
             @treelist.setItemOpenIcon(@Hash.key(directory), @bigfolder)
             @treelist.setItemClosedIcon(@Hash.key(directory), @bigfolder)
          end
+         directory = directory.gsub("\\", "/")
          Dir.chdir("#{directory}")
          wd = Dir.pwd
-         if $subf == 0
+
+         subf = $dirlist.fetch_values(directory)[0]
+         if subf[0] == 0
             temp_dir = Dir.glob('**', base:wd)
          else
             temp_dir = Dir.glob('**/*', base:wd)
@@ -139,13 +157,13 @@ class ComboBoxExample < FXMainWindow
                #Denna variable innehåller ett treelistItem. Den första partition gör så att den hamnar i rätt instance variable som skapas under i
                #som skapas under i elsif.
                
-               @Hash[instance_variable_set("@H" + "#{@dir_Variable}", @treelist.appendItem(@Hash.key(dir.rpartition("/")[0]), dir.rpartition("/")[-1]))] = dir
+               @Hash[instance_variable_set("@H" + "#{@fxItem_Variable}", @treelist.appendItem(@Hash.key(dir.rpartition("/")[0]), dir.rpartition("/")[-1]))] = dir
             elsif
-               @Hash[instance_variable_set("@H" + "#{@dir_Variable}", @treelist.appendItem(@Hash.key(directory), dir))] = dir 
+               @Hash[instance_variable_set("@H" + "#{@fxItem_Variable}", @treelist.appendItem(@Hash.key(directory), dir))] = dir 
             end 
             @treelist.setItemOpenIcon(@Hash.key(dir), @folder)
             @treelist.setItemClosedIcon(@Hash.key(dir), @folder)
-            @dir_Variable = @dir_Variable + 1
+            @fxItem_Variable = @fxItem_Variable + 1
          end
          dir_is_file.each do | dir |
             if dir.include?("/") == true
@@ -159,12 +177,12 @@ class ComboBoxExample < FXMainWindow
          @treelist.connect(SEL_RIGHTBUTTONRELEASE) do |sender, sel, event|
             unless event.moved?
                item = sender.getItemAt(event.win_x, event.win_y)
-               puts item
                unless item.nil?
                   FXMenuPane.new(self) do |menu_pane|
                      path = FXMenuCommand.new(menu_pane, "Copy path")
-                     puts item
+                     refresh = FXMenuCommand.new(menu_pane, "refresh")
                      path.connect(SEL_COMMAND) { Clipboard.copy("#{item}") }
+                     refresh.connect(SEL_COMMAND) { directories }
                      menu_pane.create
                      menu_pane.popup(nil, event.root_x, event.root_y)
                      app.runModalWhileShown(menu_pane)
@@ -174,36 +192,43 @@ class ComboBoxExample < FXMainWindow
          end
       end
    end
-   
-   def onCmdShowDialog(sender, sel, ptr)
+
+   # Internal: Opens a dialog box to select a directory to add. 
+   # The gui also allows for choice of subfolders or not. 
+   # modifiedDir - A temporary variable to modify so backslash change to forwardslash. 
+   # tempMtime - Checks the Modified time for the directory. 
+   #
+   # Adds the directory with mtime and subfolder check to $dirlist.
+   #
+   # Runs the directories method.
+   def AddDialog(sender, sel, ptr)
       dialog = FXAddDialog.new(self).execute
       if dialog == 1
-         $dirlist << $dir
+         modifiedDir = "#{$target_dir}"
+         tempMtime = File.mtime("#{$target_dir}")
+         $dirlist[modifiedDir.gsub("\\", "/")] = [$subf, tempMtime]
          directories
       end
-      puts $subf
    end
-   
-   def onCmdShowDialogModal(sender, sel, ptr)
+   # Internal: Opens a dialog box to select a directory to remove.
+   #
+   # $dir - Directory selected from table in dialog box. 
+   # 
+   # Runs the directories method.
+   def DeleteDialog(sender, sel, ptr)
       dialog = FXRemoveDialog.new(self).execute
       if dialog == 1 
          $dirlist.delete($dir)
          directories
       end
    end
-   
-   
+   #Internal: Creates the gui and Shows it on the screen. 
+   #
+   #
+   #Show - A command from FXruby that shows the gui on the screen. Can have different arguments for how the gui should be shown. 
+   #
    def create
       super
-      if $dirlist.empty? == true
-         
-         dialog = FXDirDialog.new(self, "Select directory")
-         if dialog.execute != 0
-            $dirlist << dialog.directory
-         end 
-      end
-      
       show(PLACEMENT_SCREEN)
-      
    end
 end
